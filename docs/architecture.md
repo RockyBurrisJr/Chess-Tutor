@@ -5,18 +5,19 @@
 ## High-Level Design
 
 ```
-[ Browser ]
-    |
-[ Blazor WebAssembly (ChessTutor.Web) ]
-    |            |
-[ Core Logic ]  [ HTTP API calls ]
-(ChessTutor.Core)      |
-                [ ASP.NET Core API (ChessTutor.Api) ]
+[ Android / iOS Device ]
+         |
+[ .NET MAUI Shell (ChessTutor.App) ]
+         |                  |
+[ Blazor Components ]   [ HTTP API calls ]
+         |                  |
+[ ChessTutor.Core ]   [ ASP.NET Core API (ChessTutor.Api) ]
+  (chess engine)        (puzzles, lessons, user progress)
 ```
 
 ## ChessTutor.Core
 
-The heart of the application. Pure C# with no dependencies on UI or infrastructure.
+The heart of the application. Pure C# class library with no dependencies on UI or infrastructure.
 
 Responsibilities:
 - Board representation (8x8 grid)
@@ -25,18 +26,25 @@ Responsibilities:
 - Check / checkmate / stalemate detection
 - Game state management (FEN support planned)
 
-## ChessTutor.Web
+This is referenced by both `ChessTutor.App` and `ChessTutor.Api`, so the chess logic lives in exactly one place.
 
-Blazor WebAssembly project. Renders the chess board, handles user interaction, drives lessons.
+## ChessTutor.App
+
+.NET MAUI Blazor Hybrid project. The mobile app shell that hosts Blazor components inside a native container.
+
+- MAUI handles the native mobile lifecycle (permissions, screen, touch events)
+- Blazor Razor components handle all UI rendering
+- Targets Android and iOS from a single project
 
 ## ChessTutor.Api
 
-ASP.NET Core Web API. Will serve puzzles, lessons, and eventually persist user progress.
+ASP.NET Core Web API. Optional backend that will serve puzzles and lessons, and eventually persist user progress across devices.
 
 ## Key Design Decisions
 
 | Decision | Choice | Reason |
 |---|---|---|
-| UI framework | Blazor WASM | Consistent with Rocky's Blazor learning path |
-| Chess logic | Custom engine | Learning purpose — understanding the rules by coding them |
+| Mobile framework | .NET MAUI Blazor Hybrid | Deploys to Android & iOS; reuses Rocky's Blazor skills |
+| Chess logic | Custom engine (ChessTutor.Core) | Learning purpose — understand the rules by coding them |
+| Shared logic | Class library referenced by App + Api | Single source of truth for chess rules |
 | Test framework | xUnit | .NET standard, good IDE integration |
